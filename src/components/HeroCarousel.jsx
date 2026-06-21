@@ -124,7 +124,7 @@ export default function HeroCarousel() {
               {s.subheading}
             </p>
             <a
-              href="#"
+              href="https://eammu.com"
               className="mt-3 sm:mt-4 inline-block text-white text-xs sm:text-sm font-medium underline underline-offset-4 hover:text-[#FACC15] transition-colors w-fit"
             >
               Apply now

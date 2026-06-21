@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const visaServices = [
@@ -9,6 +10,7 @@ const visaServices = [
     badge: "B1/B2 Tourist & Business",
     price: "$185",
     miles: "Processing: 2–4 weeks",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?q=80&w=1400&auto=format&fit=crop",
   },
@@ -17,6 +19,7 @@ const visaServices = [
     badge: "26 European Countries",
     price: "$90",
     miles: "Processing: 10–15 days",
+    href: "https://eammu.com/schengen-visa",
     image:
       "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=1400&auto=format&fit=crop",
   },
@@ -25,6 +28,7 @@ const visaServices = [
     badge: "Tourist & Business Entry",
     price: "$127",
     miles: "Processing: 3–5 weeks",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1400&auto=format&fit=crop",
   },
@@ -33,6 +37,7 @@ const visaServices = [
     badge: "Visitor Visa — eTA",
     price: "$100",
     miles: "Processing: 2–8 weeks",
+    href: "/visa/canada",
     image:
       "https://images.unsplash.com/photo-1503614472-8c93d56e92ce?q=80&w=1400&auto=format&fit=crop",
   },
@@ -41,6 +46,7 @@ const visaServices = [
     badge: "Tourist eVisa — Subclass 600",
     price: "$145",
     miles: "Processing: 1–4 weeks",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?q=80&w=1400&auto=format&fit=crop",
   },
@@ -49,6 +55,7 @@ const visaServices = [
     badge: "Short-stay Tourist Visa",
     price: "$35",
     miles: "Processing: 5–7 business days",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1400&auto=format&fit=crop",
   },
@@ -57,6 +64,7 @@ const visaServices = [
     badge: "Embassy Slot Booking",
     price: "$49",
     miles: "Confirmation: 24–48 hrs",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1554774853-aae0a22c8aa4?q=80&w=1400&auto=format&fit=crop",
   },
@@ -65,6 +73,7 @@ const visaServices = [
     badge: "30 / 60 / 90-day Tourist",
     price: "$75",
     miles: "Processing: 3–5 business days",
+    href: "https://eammu.com",
     image:
       "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1400&auto=format&fit=crop",
   },
@@ -98,7 +107,21 @@ export default function VisaCarousel() {
 
   const handlePrev = () => { pauseTemporarily(); prev(); };
   const handleNext = () => { pauseTemporarily(); next(); };
-  const handleCardClick = (i) => { pauseTemporarily(); setCenter(i); };
+
+  // Side cards: center them instead of navigating.
+  // Center card: let the Link navigate normally.
+  const handleCardClick = (i, e) => {
+    if (isDragging.current) {
+      e.preventDefault();
+      return;
+    }
+    if (i !== center) {
+      e.preventDefault();
+      pauseTemporarily();
+      setCenter(i);
+    }
+    // i === center → no preventDefault, Link navigates to visa.href
+  };
 
   const onPointerDown = (e) => {
     dragStartX.current = e.clientX ?? e.touches?.[0]?.clientX;
@@ -167,9 +190,10 @@ export default function VisaCarousel() {
             const opacity = abs > 1 ? 0.6 : 1;
 
             return (
-              <div
+              <Link
                 key={visa.city}
-                onClick={() => !isDragging.current && handleCardClick(i)}
+                href={visa.href}
+                onClick={(e) => handleCardClick(i, e)}
                 className="absolute transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]"
                 style={{
                   transform: `translateX(${translateX}px) translateY(${translateY}px) scale(${scale})`,
@@ -235,7 +259,7 @@ export default function VisaCarousel() {
                     <div className="absolute inset-0 rounded-2xl ring-1 ring-[#C9A84C]/40 pointer-events-none" />
                   )}
                 </div>
-              </div>
+              </Link>
             );
           })}
 
@@ -262,7 +286,7 @@ export default function VisaCarousel() {
         {visaServices.map((_, i) => (
           <button
             key={i}
-            onClick={() => handleCardClick(i)}
+            onClick={() => { pauseTemporarily(); setCenter(i); }}
             aria-label={`Go to ${visaServices[i].city}`}
             className={`transition-all duration-300 rounded-full ${
               i === center

@@ -37,12 +37,12 @@ export async function generateMetadata({ params }) {
         "visa consultancy Bangladesh",
       ].join(", "),
       alternates: {
-        canonical: `https://visaexpresshub.com/visa-checker/${countrySlug}`,
+        canonical: `https://visa.eammu.com/visa-checker/${countrySlug}`,
       },
       openGraph: {
         title: `${passport} → ${destination} Visa Requirements | Visa Express`,
         description: `Find out everything a ${passport} passport holder needs to travel to ${destination} – visa type, fees, documents & step-by-step guide.`,
-        url: `https://visaexpresshub.com/visa-checker/${countrySlug}`,
+        url: `https://visa.eammu.com/visa-checker/${countrySlug}`,
         siteName: "Visa Express",
         type: "website",
       },
@@ -68,12 +68,12 @@ export async function generateMetadata({ params }) {
       "visa consultancy Bangladesh",
     ].join(", "),
     alternates: {
-      canonical: `https://visaexpresshub.com/visa-checker/${countrySlug}`,
+      canonical: `https://visa.eammu.com/visa-checker/${countrySlug}`,
     },
     openGraph: {
       title: `${passport} Passport – Global Visa Requirements | Visa Express`,
       description: `Comprehensive visa information for ${passport} passport holders travelling worldwide.`,
-      url: `https://visaexpresshub.com/visa-checker/${countrySlug}`,
+      url: `https://visa.eammu.com/visa-checker/${countrySlug}`,
       siteName: "Visa Express",
       type: "website",
     },

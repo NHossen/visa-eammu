@@ -11,9 +11,7 @@ const VISA_CATEGORIES = [
     icon: Globe,
     items: [
       { name: "Schengen Visa",     desc: "26 European countries", href: "/visa/schengen"        },
-      { name: "UAE Visa",          desc: "Dubai & Abu Dhabi",     href: "/visa/uae"             },
       { name: "USA Visa",          desc: "B1/B2, F1, H1B",       href: "/visa/usa"             },
-      { name: "UK Visa",           desc: "Standard Visitor",      href: "/visa/uk"              },
       { name: "Canada Visa",       desc: "ETA & TRV",             href: "/visa/canada"          },
       { name: "Australia Visa",    desc: "Subclass 600, 500",     href: "/visa/australia"       },
     ],
@@ -23,9 +21,7 @@ const VISA_CATEGORIES = [
     icon: FileText,
     items: [
       { name: "Tourist Visa",      desc: "Leisure & travel",      href: "/visa/tourist"         },
-      { name: "Business Visa",     desc: "Meetings & conferences", href: "/visa/business"       },
       { name: "Student Visa",      desc: "Study abroad",          href: "/visa/student"         },
-      { name: "Work Visa",         desc: "Employment permits",    href: "/visa/work"            },
       { name: "Transit Visa",      desc: "Stopover & layover",    href: "/visa/transit"         },
       { name: "Medical Visa",      desc: "Treatment abroad",      href: "/visa/medical"         },
     ],
@@ -37,14 +33,10 @@ const VISA_CATEGORIES = [
       { name: "Visa Checker",      desc: "Check requirements",    href: "/visa-checker"         },
       { name: "Document Checklist",desc: "Know what to bring",    href: "/documents"            },
       { name: "Processing Time",   desc: "Track your application",href: "/processing-time"      },
-      { name: "Visa on Arrival",   desc: "No advance needed",     href: "/visa/visa-on-arrival" },
-      { name: "E-Visa",            desc: "Apply online",          href: "/visa/e-visa"          },
-      { name: "Visa-Free Travel",  desc: "No visa destinations",  href: "/visa/visa-free"       },
     ],
   },
 ];
 
-// Top-level nav links (used in the mobile drawer)
 const NAV_LINKS = [
   { label: "Home",  href: "/" },
   { label: "About", href: "/about" },
@@ -142,7 +134,10 @@ function MegaMenu({ open }) {
             <Star size={11} className="text-[#FACC15]" />
             <span>IATA Accredited • Trusted by 50,000+ travelers</span>
           </div>
-          <Link href="/visa-checker" className="flex items-center gap-1.5 text-xs font-semibold text-[#FACC15] hover:text-white transition-colors">
+          <Link
+            href="/visa-checker"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#FACC15] hover:text-white transition-colors"
+          >
             <Clock size={11} />
             Check Visa Now →
           </Link>
@@ -152,7 +147,7 @@ function MegaMenu({ open }) {
   );
 }
 
-// ─── Mobile Drawer (right side) ──────────────────────────────────────────────
+// ─── Mobile Drawer ───────────────────────────────────────────────────────────
 function MobileDrawer({ open, onClose }) {
   return (
     <>
@@ -167,14 +162,12 @@ function MobileDrawer({ open, onClose }) {
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Drawer header — close button only (logo removed) */}
         <div className="flex items-center justify-end p-5 border-b border-white/10 shrink-0">
           <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
 
-        {/* Scrollable nav body */}
         <nav className="flex-1 overflow-y-auto p-4 space-y-1 pb-8">
           {NAV_LINKS.map((link) => (
             <Link
@@ -217,44 +210,84 @@ export default function TopNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled]     = useState(false);
   const [visible, setVisible]       = useState(true);
-  const visaRef                      = useRef(null);
-  const closeTimer                   = useRef(null);
-  const idleTimer                    = useRef(null);
-  const overlayOpenRef                = useRef(false);
+  const visaRef                     = useRef(null);
+  const closeTimer                  = useRef(null);
+  const overlayOpenRef              = useRef(false);
 
-  // Keep a ref in sync so the scroll handler (registered once) always
-  // knows whether an overlay/menu is open without needing to re-bind.
+  // Keep overlayOpenRef in sync so the scroll handler always knows
+  // whether a menu/overlay is open without re-binding the listener.
   useEffect(() => {
     overlayOpenRef.current = visaOpen || searchOpen || mobileOpen;
-    if (overlayOpenRef.current) {
-      setVisible(true);
-      clearTimeout(idleTimer.current);
-    }
+    // Always show navbar while any overlay is open
+    if (overlayOpenRef.current) setVisible(true);
   }, [visaOpen, searchOpen, mobileOpen]);
 
+  // ── Scroll direction + idle logic ──────────────────────────────────────
+  // Scroll DOWN          → hide navbar
+  // Scroll UP            → show navbar
+  // Within 60px of top   → always visible
+  // Idle for 1.5s        → show navbar automatically
   useEffect(() => {
-    const SHOW_AFTER_IDLE_MS = 2000; // bring it back once scrolling stops for 2s
+    let lastY      = window.scrollY;
+    let idleTimer  = null;
+
+    const clearIdle = () => {
+      if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    };
+
+    // FIX: previously this restarted the 1.5s timer on every single
+    // scroll event, so continuous scrolling down kept pushing the
+    // timer back and it never fired. Now it only starts a countdown
+    // if one isn't already running, so the original 1.5s timer is
+    // left alone to actually complete even while scrolling continues.
+    const scheduleIdle = () => {
+      if (idleTimer) return; // a countdown is already running — let it finish
+      idleTimer = setTimeout(() => {
+        idleTimer = null;
+        setVisible(true);
+      }, 1500);
+    };
 
     const handler = () => {
-      setScrolled(window.scrollY > 12);
+      const currentY = window.scrollY;
+      setScrolled(currentY > 12);
 
-      if (!overlayOpenRef.current) {
-        setVisible(false); // hide as soon as scrolling starts/continues
-
-        // Any scroll activity resets the idle clock; once 2s pass with
-        // no further scrolling, bring the navbar back for the visitor.
-        clearTimeout(idleTimer.current);
-        idleTimer.current = setTimeout(() => setVisible(true), SHOW_AFTER_IDLE_MS);
+      // Never hide while an overlay / menu is open
+      if (overlayOpenRef.current) {
+        lastY = currentY;
+        return;
       }
+
+      if (currentY <= 60) {
+        // Near the top — always visible, cancel any pending idle
+        clearIdle();
+        setVisible(true);
+      } else if (currentY > lastY) {
+        // Scrolling down → hide. Idle timer starts once (on the first
+        // down-tick after being visible) and is left to run out, so it
+        // fires 1.5s later even if scrolling continues. Once it fires
+        // and the navbar reappears, the next down-tick hides it again
+        // and starts a fresh 1.5s countdown — repeating "peek" effect.
+        setVisible(false);
+        scheduleIdle();
+      } else {
+        // Scrolling up → show immediately + restart idle (keeps it visible
+        // even if user stops scrolling mid-page going up)
+        setVisible(true);
+        scheduleIdle();
+      }
+
+      lastY = currentY;
     };
 
     window.addEventListener("scroll", handler, { passive: true });
     return () => {
       window.removeEventListener("scroll", handler);
-      clearTimeout(idleTimer.current);
+      clearIdle();
     };
   }, []);
 
+  // ── Cmd/Ctrl+K → open search ───────────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -294,23 +327,33 @@ export default function TopNavbar() {
               : "0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
           }}
         >
-          {/* ── Logo — mobile only ── */}
+          {/* Logo — mobile only */}
           <Link href="/" className="flex lg:hidden items-center shrink-0 pl-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/eammu_white_logo.webp" alt="Eammu Holidays" className="h-7 w-auto object-contain" />
+            <img
+              src="/eammu_white_logo.webp"
+              alt="Eammu Holidays"
+              className="h-7 w-auto object-contain"
+            />
           </Link>
           <div className="lg:hidden w-px h-5 bg-white/10 mx-1" />
 
-          {/* ── Desktop links ── */}
+          {/* Desktop links */}
           <div className="hidden lg:flex items-center gap-0.5">
-            <Link href="/" className="px-4 py-2 rounded-xl text-white/75 hover:text-white hover:bg-white/8 text-[13px] font-medium transition-all duration-150">
+            <Link
+              href="/"
+              className="px-4 py-2 rounded-xl text-white/75 hover:text-white hover:bg-white/8 text-[13px] font-medium transition-all duration-150"
+            >
               Home
             </Link>
-            <Link href="/about" className="px-4 py-2 rounded-xl text-white/75 hover:text-white hover:bg-white/8 text-[13px] font-medium transition-all duration-150">
+            <Link
+              href="/about"
+              className="px-4 py-2 rounded-xl text-white/75 hover:text-white hover:bg-white/8 text-[13px] font-medium transition-all duration-150"
+            >
               About
             </Link>
 
-            {/* Visa — mega menu */}
+            {/* Visa — mega menu trigger */}
             <div
               ref={visaRef}
               className="relative"
@@ -320,13 +363,17 @@ export default function TopNavbar() {
               <button
                 onClick={() => setVisaOpen((v) => !v)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 ${
-                  visaOpen ? "text-[#FACC15] bg-white/8" : "text-white/75 hover:text-white hover:bg-white/8"
+                  visaOpen
+                    ? "text-[#FACC15] bg-white/8"
+                    : "text-white/75 hover:text-white hover:bg-white/8"
                 }`}
               >
                 Visa
                 <ChevronDown
                   size={13}
-                  className={`transition-transform duration-200 ${visaOpen ? "rotate-180 text-[#FACC15]" : ""}`}
+                  className={`transition-transform duration-200 ${
+                    visaOpen ? "rotate-180 text-[#FACC15]" : ""
+                  }`}
                 />
               </button>
               {visaOpen && (
@@ -336,10 +383,10 @@ export default function TopNavbar() {
             </div>
           </div>
 
-          {/* Divider between nav links and actions — desktop only */}
+          {/* Divider — desktop only */}
           <div className="hidden lg:block w-px h-5 bg-white/10 mx-1" />
 
-          {/* ── Right actions ── */}
+          {/* Right actions */}
           <div className="flex items-center gap-1.5 shrink-0">
             {/* Search */}
             <button
@@ -371,7 +418,7 @@ export default function TopNavbar() {
         </nav>
       </header>
 
-      {/* ── Overlays ── */}
+      {/* Overlays */}
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
       <MobileDrawer open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>

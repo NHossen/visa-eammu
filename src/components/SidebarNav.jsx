@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   GraduationCap,
   Briefcase,
@@ -18,16 +19,13 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Check Tourist Visa", icon: Globe },
-  { label: "Student Visa",       icon: GraduationCap },
-  { label: "Work Visa",          icon: Briefcase },
-  { label: "Family Visa",        icon: Users },
-  { label: "Transit Visa",       icon: ArrowRightLeft },
-  { label: "Appointment",        icon: CalendarCheck },
-  { label: "Travel Booking",     icon: Plane },
-  { label: "Visa Offers",        icon: Tag },
-  { label: "Free Consult",       icon: MessageCircle },
-  { label: "Help",               icon: HelpCircle },
+  { label: "Check Tourist Visa", icon: Globe,           href: "/visa-checker"          },
+  { label: "Check Student Visa", icon: GraduationCap,   href: "/student-visa"          },
+  { label: "Visa Processing Time", icon: Tag,           href: "https://eammu.com/travel-resources/visa-processing-time-tracker/"               },
+  { label: "Appointment",        icon: CalendarCheck,   href: "https://eammu.com/"          },
+  { label: "Travel Booking",     icon: Plane,           href: "https://eammu.com/"       },
+  { label: "Free Consult",       icon: MessageCircle,   href: "https://eammu.com/"    },
+  { label: "Help",               icon: HelpCircle,      href: "https://eammu.com/"                 },
 ];
 
 export default function SidebarNav() {
@@ -50,23 +48,26 @@ export default function SidebarNav() {
       }}
     >
       {/* ── Logo ── */}
-      <div className={`flex items-center py-5 transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-4"}`}>
+      <Link
+        href="/"
+        className={`flex items-center py-5 transition-all duration-300 ${collapsed ? "justify-center px-0" : "px-4"}`}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/eammu_white_logo.webp"
           alt="Eammu Holidays"
           className={`object-contain transition-all duration-300 ${collapsed ? "w-9 h-9" : "w-32 h-10"}`}
         />
-      </div>
+      </Link>
 
       <div className="h-px bg-white/6 mx-3 mb-1" />
 
       {/* ── Nav items ── */}
       <nav className="flex-1 px-2 mt-2 space-y-0.5 overflow-y-auto scrollbar-none">
-        {navItems.map(({ label, icon: Icon }) => (
-          <a
+        {navItems.map(({ label, icon: Icon, href }) => (
+          <Link
             key={label}
-            href="#"
+            href={href}
             title={collapsed ? label : undefined}
             className={`
               group flex items-center gap-3 py-2.5 rounded-xl
@@ -82,7 +83,7 @@ export default function SidebarNav() {
             {!collapsed && (
               <span className="text-[13px] font-medium leading-none">{label}</span>
             )}
-          </a>
+          </Link>
         ))}
       </nav>
 
@@ -93,12 +94,12 @@ export default function SidebarNav() {
           <p className="text-white/45 text-[11px] mt-0.5 leading-snug">
             Talk to an expert — no charge
           </p>
-          <a
-            href="#"
+          <Link
+            href="/visa-checker"
             className="mt-2 inline-block text-[#FACC15] text-[11px] font-semibold underline underline-offset-2 hover:text-white transition-colors"
           >
             Book now →
-          </a>
+          </Link>
         </div>
       )}
 
